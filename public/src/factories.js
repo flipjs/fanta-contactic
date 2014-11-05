@@ -4,4 +4,33 @@ angular.module('ContactsApp')
       'update': { method: 'PUT' }
     })
   })
+  .factory('Fields', function($q, $http, Contact) {
+    var url = '/options/displayed_fields'
+    var ignore = ['firstName', 'lastName', 'id', 'userId']
+    var allFields = []
+    var deferred = $q.defer()
+
+    var contacts = Contact.query(function() {
+      contacts.forEach(function(c) {
+        Object.keys(c).forEach(function(k) {
+          if (allFields.indexOf(k) < 0 && ignore.indexOf(k) < 0) {
+            allFields.push(k)
+          }
+        })
+      })
+      deferred.resolve(allFields)
+    })
+
+    return {
+      get: function() {
+        return $http.get(url)
+      },
+      set: function(newFields) {
+        return $http.post(url, { fields: newFields })
+      },
+      headers: function() {
+        return deferred.promise
+      }
+    }
+  })
 // end angular fn
